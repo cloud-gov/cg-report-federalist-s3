@@ -24,7 +24,7 @@ jobs:
         - -e
         - -x
         - -c
-        - /app/asciicast2gif recording/federalist-report.json gif-recording/federalist-report.gif
+        - /app/asciicast2gif -s .5 recording/federalist-report.json gif-recording/federalist-report.gif
   - task: curl-to-slack
     config:
       platform: linux
