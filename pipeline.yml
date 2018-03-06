@@ -1,45 +1,49 @@
---
 jobs:
 - name: report-federalist-changes
   plan:
   - get: report-federalist
   - task: screenshot-cloudtrail
     tags: [iaas]
-    file: report-federalist/screenshot-cloudtrail.sh
+    file: report-federalist/screenshot-cloudtrail.yml
     params:
       BUCKET: {{federalist-bucket}}
   - task: convert-to-gif
-    platform: linux
-    image_resource:
-      type: docker-image
-      source:
-        repository: asciinema/asciicast2gif
-    inputs:
-      - name: recording
-    outputs:
-      - name: gif-recording
-    run:
-      path: sh
-      args:
-      - -exc
-      - |
-      - asciicast2gif recording/federalist-report.json gif-recording/federalist-report.gif
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: asciinema/asciicast2gif
+      inputs:
+        - name: recording
+      outputs:
+        - name: gif-recording
+      run:
+        path: sh
+        args:
+        - -e
+        - -x
+        - -c
+        - /app/asciicast2gif recording/federalist-report.json gif-recording/federalist-report.gif
   - task: curl-to-slack
-    platform: linux
-    image_resource:
-      type: docker-image
-      source:
-        repository: 18fgsa/concourse-task
-    inputs:
-      - name: gif-recording
-    params:
-      SLACK_TOKEN: {{slack-token}}
-    run:
-      path: sh
-      args:
-      - -exc
-      - |
-      - curl -F file=@gif-recording/federalist-report.gif -F channels=@adamkendall -F token=${SLACK_TOKEN} https://slack.com/api/files.upload
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: 18fgsa/concourse-task
+      inputs:
+        - name: gif-recording
+      params:
+        SLACK_TOKEN: {{slack-token}}
+        SLACK_CHANNELS: {{slack-channels}}
+      run:
+        path: sh
+        args:
+        - -e
+        - -x
+        - -c
+        - curl -F file=@gif-recording/federalist-report.gif -F channels=${SLACK_CHANNELS} -F token=${SLACK_TOKEN} https://slack.com/api/files.upload
 
 resources:
 - name: report-federalist
