@@ -1,7 +1,10 @@
 jobs:
 - name: report-federalist-changes
   plan:
-  - get: report-federalist
+  - aggregate:
+    - get: compliance-check-cron
+      trigger: true
+    - get: report-federalist
   - task: screenshot-cloudtrail
     tags: [iaas]
     file: report-federalist/screenshot-cloudtrail.yml
@@ -51,3 +54,15 @@ resources:
   source:
     uri: {{report-federalist-git-url}}
     branch: {{report-federalist-git-branch}}
+
+- name: compliance-check-cron
+  type: cron-resource
+  source:
+    expression: 0 15 * * 5 # Run at 3PM EST on Friday
+    location: "America/New_York"
+
+resource_types:
+- name: cron-resource
+  type: docker-image
+  source:
+    repository: cftoolsmiths/cron-resource
