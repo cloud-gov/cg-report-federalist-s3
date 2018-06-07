@@ -21,32 +21,23 @@ jobs:
         - name: recording
       outputs:
         - name: gif-recording
-      run:
-        path: sh
-        args:
-        - -e
-        - -x
-        - -c
-        - /app/asciicast2gif -s .5 recording/federalist-report.json gif-recording/federalist-report.gif
-  - task: curl-to-slack
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: 18fgsa/concourse-task
-      inputs:
-        - name: gif-recording
       params:
-        SLACK_TOKEN: {{slack-token}}
-        SLACK_CHANNELS: {{slack-channels}}
+        DEBUG: 1
       run:
         path: sh
         args:
         - -e
         - -x
         - -c
-        - curl -F file=@gif-recording/federalist-report.gif -F channels=${SLACK_CHANNELS} -F token=${SLACK_TOKEN} https://slack.com/api/files.upload
+        - /app/asciicast2gif -s .5 -S 1 -w 120 -h 32 recording/federalist-report.json gif-recording/federalist-report.gif
+  - task: send-report
+    file: report-federalist/send-report.yml
+    params:
+      SMTP_HOST: {{smtp-host}}
+      SMTP_PASS: {{smtp-pass}}
+      SMTP_USER: {{smtp-user}}
+      MAIL_FROM: {{mail-from}}
+      MAIL_TO: {{mail-to}}
 
 resources:
 - name: report-federalist
