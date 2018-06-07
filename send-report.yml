@@ -1,0 +1,20 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: 18fgsa/concourse-task
+
+inputs:
+  - name: gif-recording
+  - name: report-federalist
+
+run:
+  path: report-federalist/send-report.sh
+
+params:
+  SMTP_HOST:
+  SMTP_PASS:
+  SMTP_USER:
+  MAIL_FROM:
+  MAIL_TO:
