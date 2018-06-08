@@ -28,8 +28,8 @@ Content-Id: <$2>" >> "$file_upload"
 echo "<html>
 <body>
     <div>
-        <p>Please see the screenshot included below</p>
-        <p>cloud.gov team</p>
+        <p>Please see the screenshot included below. Convert timestamps using a tool like <a href='https://www.epochconverter.com/'>epochconverter.com</a></p>
+        <p>     -- the cloud.gov team</p>
         <p><img src=\"cid:cloudtrail-federalist.png\"></p>
     </div>
 </body>
