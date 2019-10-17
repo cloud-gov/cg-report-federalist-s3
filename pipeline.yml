@@ -1,7 +1,7 @@
 jobs:
 - name: report-federalist-changes
   plan:
-  - aggregate:
+  - in_parallel:
     - get: compliance-check-cron
       trigger: true
     - get: report-federalist
@@ -9,7 +9,7 @@ jobs:
     tags: [iaas]
     file: report-federalist/screenshot-cloudtrail.yml
     params:
-      BUCKET: {{federalist-bucket}}
+      BUCKET: ((federalist-bucket))
   - task: convert-to-gif
     config:
       platform: linux
@@ -33,18 +33,18 @@ jobs:
   - task: send-report
     file: report-federalist/send-report.yml
     params:
-      SMTP_HOST: {{smtp-host}}
-      SMTP_PASS: {{smtp-pass}}
-      SMTP_USER: {{smtp-user}}
-      MAIL_FROM: {{mail-from}}
-      MAIL_TO: {{mail-to}}
+      SMTP_HOST: ((smtp-host))
+      SMTP_PASS: ((smtp-pass))
+      SMTP_USER: ((smtp-user))
+      MAIL_FROM: ((mail-from))
+      MAIL_TO: ((mail-to))
 
 resources:
 - name: report-federalist
   type: git
   source:
-    uri: {{report-federalist-git-url}}
-    branch: {{report-federalist-git-branch}}
+    uri: ((report-federalist-git-url))
+    branch: ((report-federalist-git-branch))
 
 - name: compliance-check-cron
   type: cron-resource
