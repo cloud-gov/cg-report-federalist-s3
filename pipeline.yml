@@ -5,31 +5,16 @@ jobs:
     - get: compliance-check-cron
       trigger: true
     - get: report-federalist
-  - task: screenshot-cloudtrail
+    - get: terraform-yaml
+
+  - task: query-cloudtrail
     tags: [iaas]
-    file: report-federalist/screenshot-cloudtrail.yml
+    file: report-federalist/query-cloudtrail.yml
     params:
-      BUCKET: ((federalist-bucket))
-  - task: convert-to-gif
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: asciinema/asciicast2gif
-      inputs:
-        - name: recording
-      outputs:
-        - name: gif-recording
-      params:
-        DEBUG: 1
-      run:
-        path: sh
-        args:
-        - -e
-        - -x
-        - -c
-        - /app/asciicast2gif -s .5 -S 1 -w 120 -h 32 recording/federalist-report.json gif-recording/federalist-report.gif
+      FED_AWS_ACCESS_KEY_ID: ((fed-federalist-aws-access-key-id))
+      FED_AWS_SECRET_ACCESS_KEY: ((fed-federalist-aws-secret-access-key))
+      OLD_BUCKETS: ((old-buckets))
+
   - task: send-report
     file: report-federalist/send-report.yml
     params:
@@ -49,11 +34,23 @@ resources:
 - name: compliance-check-cron
   type: cron-resource
   source:
-    expression: 0 15 * * 5 # Run at 3PM EST on Friday
+    expression: 0 15 * * 5  # Run at 3PM EST on Friday
     location: "America/New_York"
+
+- name: terraform-yaml
+  type: s3-iam
+  source:
+    bucket: ((tf-state-bucket-tooling))
+    versioned_file: ((tf-state-file-tooling))
+    region_name: ((aws-region))
 
 resource_types:
 - name: cron-resource
   type: docker-image
   source:
     repository: cftoolsmiths/cron-resource
+
+- name: s3-iam
+  type: docker-image
+  source:
+    repository: 18fgsa/s3-resource

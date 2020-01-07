@@ -1,6 +1,10 @@
 #!/bin/bash
-set -eu
-SCREENSHOT=""
+
+set -euo pipefail
+shopt -s inherit_errexit
+
+report_file="$1"
+
 file_upload="body.txt"
 
 # add an image to data.txt :
@@ -11,15 +15,10 @@ file_upload="body.txt"
 function add_file {
     echo "--MULTIPART-MIXED-BOUNDARY
 Content-Type: $1
-Content-Transfer-Encoding: base64" >> "$file_upload"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=$2
 
-    if [ ! -z "$2" ]; then
-        echo "Content-Disposition: inline
-Content-Id: <$2>" >> "$file_upload"
-    else
-        echo "Content-Disposition: attachment; filename=$4" >> "$file_upload"
-    fi
-    echo "$3
+$3
 
 " >> "$file_upload"
 }
@@ -28,9 +27,8 @@ Content-Id: <$2>" >> "$file_upload"
 echo "<html>
 <body>
     <div>
-        <p>Please see the screenshot included below. Convert timestamps using a tool like <a href='https://www.epochconverter.com/'>epochconverter.com</a></p>
+        <p>Please see the JSON file attached to this email.</p>
         <p>     -- the cloud.gov team</p>
-        <p><img src=\"cid:cloudtrail-federalist.png\"></p>
     </div>
 </body>
 </html>" > message.html
@@ -53,11 +51,7 @@ Content-Disposition: inline
 $message_base64
 --MULTIPART-ALTERNATIVE-BOUNDARY--" > "$file_upload"
 
-# add an image with corresponding content-id
-report_file="gif-recording/federalist-report.gif"
-echo $(file $report_file)
-gif_content=$(base64 $report_file)
-add_file "image/png" "cloudtrail-federalist.png" "${gif_content}"
+add_file "text/plain" "federalist.json" "$(base64 "$report_file")"
 
 # end of uploaded file
 echo "--MULTIPART-MIXED-BOUNDARY--" >> "$file_upload"
