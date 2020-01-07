@@ -1,0 +1,4 @@
+Style/Documentation:
+  enabled: false
+Layout/LineLength:
+  Max: 100

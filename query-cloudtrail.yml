@@ -1,0 +1,43 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: 18fgsa/concourse-task
+params:
+  AWS_DEFAULT_REGION: us-gov-west-1
+  FED_AWS_ACCESS_KEY_ID: ((fed-federalist-aws-access-key-id))
+  FED_AWS_SECRET_ACCESS_KEY: ((fed-federalist-aws-secret-access-key))
+  OLD_BUCKETS: ((old-buckets))
+inputs:
+  - name: terraform-yaml
+  - name: report-federalist
+outputs:
+  - name: report
+caches:
+  - path: report-federalist/vendor
+run:
+  path: /bin/bash
+  args:
+  - -exc
+  - |
+    cd report-federalist
+
+    gem update \
+      --no-document \
+      --silent \
+      --no-post-install-message \
+      --system 3.0.6 > /dev/null
+
+    # Why 3.0.6?
+    # https://github.com/rubygems/rubygems/issues/3068#issuecomment-574775885
+
+    bundle config set deployment true
+    bundle config set frozen true
+    bundle install --quiet
+
+    bundle exec rspec ./query-cloudtrail-spec.rb
+
+    bundle exec ./query-cloudtrail.rb \
+      ../terraform-yaml/state.yml \
+      ../report/cloudtrail.json
