@@ -17,13 +17,13 @@ def main
 
   events = []
 
-  debug "Gathering events for old buckets:"
-  add_bucket_events(events, old_buckets)
+  puts "Gathering events for old buckets:"
+  add_bucket_events(events, old_buckets, cg_cloudtrail)
 
-  debug "Gathering events for new buckets:"
-  add_bucket_events(events, new_buckets)
+  puts "Gathering events for new buckets:"
+  add_bucket_events(events, new_buckets, fed_cloudtrail)
 
-  debug "Writing json file to #{output_file_path}"
+  puts "Writing json file to #{output_file_path}"
   File.open(output_file_path, 'w') do |f|
     f.puts(JSON.pretty_generate(events,
                                 object_nl: "\n",
@@ -32,10 +32,12 @@ def main
   end
 end
 
-def add_bucket_events(event_list, bucket_list)
+def add_bucket_events(event_list, bucket_list, cloudtrail_client)
   bucket_list.each do |bucket|
-    debug "  #{bucket}"
-    event_list.push(*events_for_bucket(bucket))
+    print "  #{bucket}"
+    events = events_for_bucket(cloudtrail_client, bucket)
+    puts " - #{events.length} events"
+    event_list.push(*events)
   end
 end
 
@@ -65,14 +67,14 @@ def new_buckets
   return fed_s3.list_buckets.buckets.map(&:name).grep(%r{federalist})
 end
 
-def events_for_bucket(name)
+def events_for_bucket(cloudtrail_client, name)
   # We sleep here to avoid rate limiting (2 req/second)
   sleep(0.6)
-  response = []
-  client = Aws::CloudTrail::Client.new(fed_client_creds)
+  events = []
   lookup_attributes = [{attribute_key: "ResourceName", attribute_value: name}]
-  client.lookup_events(lookup_attributes: lookup_attributes).events.each do |event|
-    response.append({
+  response = cloudtrail_client.lookup_events(lookup_attributes: lookup_attributes)
+  response.events.each do |event|
+    events.append({
       report_date: REPORT_DATE,
       bucket_name: name,
       username: event.username,
@@ -81,13 +83,7 @@ def events_for_bucket(name)
       event_time: event.event_time.utc,
     })
   end
-  return response
-end
-
-def debug(*opts)
-  unless defined?(::RSpec)
-    puts(*opts)
-  end
+  return events
 end
 
 main unless defined?(::RSpec)
