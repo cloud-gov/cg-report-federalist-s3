@@ -9,6 +9,8 @@ params:
   FED_AWS_ACCESS_KEY_ID: ((fed-federalist-aws-access-key-id))
   FED_AWS_SECRET_ACCESS_KEY: ((fed-federalist-aws-secret-access-key))
   OLD_BUCKETS: ((old-buckets))
+  JSON_FILE: "../report/cloudtrail.json"
+  TF_STATE: "../terraform-yaml/state.yml"
 inputs:
   - name: terraform-yaml
   - name: report-federalist
@@ -38,6 +40,6 @@ run:
 
     bundle exec rspec ./query-cloudtrail-spec.rb
 
-    bundle exec ./query-cloudtrail.rb \
-      ../terraform-yaml/state.yml \
-      ../report/cloudtrail.json
+    bundle exec ./query-cloudtrail.rb "$JSON_FILE" "$TF_STATE"
+
+    bundle exec rspec ./validate-json-spec.rb
