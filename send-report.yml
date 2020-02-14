@@ -16,4 +16,4 @@ inputs:
 run:
   path: report-federalist/send-report.sh
   args:
-    - report/cloudtrail.json
+    - report/federalist.json
