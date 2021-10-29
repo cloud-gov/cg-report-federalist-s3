@@ -22,7 +22,6 @@ describe "#{ENV.fetch('JSON_FILE')}" do
   end
 
   it 'contains events for federalist/cg buckets' do
-    expect(federalist_bucket_events).not_to be_empty
-      or expect(cg_bucket_events).not_to be_empty
+    expect(federalist_bucket_events).not_to be_empty or expect(cg_bucket_events).not_to be_empty
   end
 end
