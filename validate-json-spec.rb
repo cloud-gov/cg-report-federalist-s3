@@ -21,11 +21,8 @@ describe "#{ENV.fetch('JSON_FILE')}" do
     events.select { |e| e.bucket_name.start_with?('cg-') }
   end
 
-  it 'contains events for federalist buckets' do
+  it 'contains events for federalist/cg buckets' do
     expect(federalist_bucket_events).not_to be_empty
-  end
-
-  it 'contains events for cg buckets' do
-    expect(cg_bucket_events).not_to be_empty
+      or expect(cg_bucket_events).not_to be_empty
   end
 end
