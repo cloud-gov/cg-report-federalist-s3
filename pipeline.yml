@@ -30,6 +30,7 @@ resources:
   source:
     uri: ((report-federalist-git-url))
     branch: ((report-federalist-git-branch))
+    commit_verification_keys: ((cloud-gov-pgp-keys))
 
 - name: compliance-check-cron
   type: cron-resource
